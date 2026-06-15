@@ -1,5 +1,7 @@
+from .backend.memory import MidiKeyboardDB
 
-from .backend.memory import create_record, select_record
+
+db = MidiKeyboardDB()
 
 
 def _print_menu() -> None:
@@ -38,7 +40,7 @@ def _add_keyboard() -> None:
     has_pads = input("has_pads (да/нет): ").strip()
 
     try:
-        record = create_record(keyboard_id, company_name, keys_number, price, has_pads)
+        record = db.create(keyboard_id, company_name, keys_number, price, has_pads)
         print(f"Запись добавлена: {record}")
 
     except ValueError as exc:
@@ -56,7 +58,7 @@ def _print_records(records: list[tuple[int, str, int, float, bool]]) -> None:
 
 def _show_all_keyboards() -> None:
     print("\nСписок записей")
-    _print_records(select_record())
+    _print_records(db.select())
 
 
 def _read_optional_int(prompt: str) -> int | None:
@@ -98,7 +100,7 @@ def _find_keyboards_by_filter() -> None:
 
     has_pads = input("has_pads (да/нет): ").strip() or None
 
-    records = select_record(
+    records = db.select(
         keyboard_id=keyboard_id,
         company_name=company_name,
         keys_number=keys_number,
