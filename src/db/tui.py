@@ -1,7 +1,20 @@
 from .backend.memory import MidiKeyboardDB
+from .backend.file import FileMidiKeyboardDB
 
 
-db = MidiKeyboardDB()
+db = None
+
+
+def _init_database():
+    global db
+    print("Выберите тип базы данных:")
+    print("1. In-memory")
+    print("2. Файловая")
+    choice = input("Введите номер: ").strip()
+    if choice == "2":
+        db = FileMidiKeyboardDB()
+    else:
+        db = MidiKeyboardDB()
 
 
 def _print_menu() -> None:
@@ -42,8 +55,7 @@ def _add_keyboard() -> None:
     try:
         record = db.create(keyboard_id, company_name, keys_number, price, has_pads)
         print(f"Запись добавлена: {record}")
-
-    except ValueError as exc:
+    except Exception as exc:
         print(f"Ошибка: {exc}")
 
 
@@ -51,7 +63,6 @@ def _print_records(records: list[tuple[int, str, int, float, bool]]) -> None:
     if not records:
         print("Записи не найдены.")
         return
-
     for record in records:
         print(record)
 
@@ -64,10 +75,8 @@ def _show_all_keyboards() -> None:
 def _read_optional_int(prompt: str) -> int | None:
     while True:
         raw = input(prompt).strip()
-
         if raw == "":
             return None
-
         try:
             return int(raw)
         except ValueError:
@@ -77,10 +86,8 @@ def _read_optional_int(prompt: str) -> int | None:
 def _read_optional_float(prompt: str) -> float | None:
     while True:
         raw = input(prompt).strip()
-
         if raw == "":
             return None
-
         try:
             return float(raw)
         except ValueError:
@@ -89,15 +96,10 @@ def _read_optional_float(prompt: str) -> float | None:
 
 def _find_keyboards_by_filter() -> None:
     print("\nПоиск по фильтру (Enter = пропустить поле)")
-
     keyboard_id = _read_optional_int("id: ")
-
     company_name = input("company_name: ").strip() or None
-
     keys_number = _read_optional_int("keys_number: ")
-
     price = _read_optional_float("price: ")
-
     has_pads = input("has_pads (да/нет): ").strip() or None
 
     records = db.select(
@@ -107,28 +109,23 @@ def _find_keyboards_by_filter() -> None:
         price=price,
         has_pads=has_pads,
     )
-
     _print_records(records)
 
 
 def run() -> None:
+    _init_database()
     while True:
         _print_menu()
-
         action = input("Выберите действие: ").strip()
 
         if action == "1":
             _add_keyboard()
-
         elif action == "2":
             _show_all_keyboards()
-
         elif action == "3":
             _find_keyboards_by_filter()
-
         elif action == "0":
             print("Выход из программы.")
             break
-
         else:
             print("Неизвестная команда. Повторите ввод.")

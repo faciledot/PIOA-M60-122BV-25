@@ -1,9 +1,37 @@
+import json
+import os
+
+from .errors import (
+    DuplicateIDError,
+    EmptyCompanyNameError,
+    InvalidHasPadsError,
+    InvalidJSONError,
+    InvalidKeysNumberError,
+    InvalidPriceError,
+)
+
 type MidiKeyboardRecord = tuple[int, str, int, float, bool]
 
 
-class MidiKeyboardDB:
-    def __init__(self) -> None:
+class FileMidiKeyboardDB:
+    def __init__(self, filepath: str = "midi_keyboards.json") -> None:
+        self._filepath = filepath
         self._records: list[MidiKeyboardRecord] = []
+        self._load()
+
+    def _load(self) -> None:
+        if not os.path.exists(self._filepath):
+            return
+        try:
+            with open(self._filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            raise InvalidJSONError("Файл базы данных повреждён.")
+        self._records = [tuple(record) for record in data]
+
+    def _save(self) -> None:
+        with open(self._filepath, "w", encoding="utf-8") as f:
+            json.dump(self._records, f, ensure_ascii=False, indent=2)
 
     def create(
         self,
@@ -13,32 +41,19 @@ class MidiKeyboardDB:
         price: float,
         has_pads: str,
     ) -> MidiKeyboardRecord:
-        from .errors import (
-            DuplicateIDError,
-            EmptyCompanyNameError,
-            InvalidHasPadsError,
-            InvalidKeysNumberError,
-            InvalidPriceError,
-        )
-
         if not company_name or not company_name.strip():
             raise EmptyCompanyNameError("Название компании не может быть пустым.")
-
         if keys_number <= 0:
             raise InvalidKeysNumberError("Поле keys_number не может быть отрицательным или нулевым.")
         if keys_number > 88:
             raise InvalidKeysNumberError("Количество клавиш не может превышать 88.")
-
         if price < 0:
             raise InvalidPriceError("Поле price не может быть отрицательным.")
-
         has_pads_value = has_pads.strip().lower()
         if has_pads_value not in ("да", "нет"):
             raise InvalidHasPadsError("Поле has_pads должно принимать значения 'да' или 'нет'.")
-
         if any(record[0] == keyboard_id for record in self._records):
             raise DuplicateIDError(f"Запись с id={keyboard_id} уже существует.")
-
         new_record: MidiKeyboardRecord = (
             keyboard_id,
             company_name.strip(),
@@ -47,6 +62,7 @@ class MidiKeyboardDB:
             has_pads_value == "да",
         )
         self._records.append(new_record)
+        self._save()
         return new_record
 
     def select(
@@ -57,8 +73,6 @@ class MidiKeyboardDB:
         price: float | None = None,
         has_pads: str | None = None,
     ) -> list[MidiKeyboardRecord]:
-        from .errors import InvalidHasPadsError
-
         if (
             keyboard_id is None
             and company_name is None
@@ -67,16 +81,13 @@ class MidiKeyboardDB:
             and has_pads is None
         ):
             return self._records.copy()
-
         has_pads_bool = None
         if has_pads is not None:
             has_pads_value = has_pads.strip().lower()
             if has_pads_value not in ("да", "нет"):
                 raise InvalidHasPadsError("Поле has_pads должно принимать значения 'да' или 'нет'.")
             has_pads_bool = has_pads_value == "да"
-
         result: list[MidiKeyboardRecord] = []
-
         for record in self._records:
             if keyboard_id is not None and record[0] != keyboard_id:
                 continue
@@ -89,5 +100,4 @@ class MidiKeyboardDB:
             if has_pads_bool is not None and record[4] != has_pads_bool:
                 continue
             result.append(record)
-
         return result

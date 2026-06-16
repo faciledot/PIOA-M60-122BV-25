@@ -1,0 +1,25 @@
+{
+  "columns": [
+    "keyboard_id",
+    "company_name",
+    "keys_number",
+    "price",
+    "has_pads"
+  ],
+  "records": [
+    {
+      "keyboard_id": 2,
+      "company_name": "akai",
+      "keys_number": 78,
+      "price": 400.0,
+      "has_pads": "да"
+    },
+    {
+      "keyboard_id": 2,
+      "company_name": "akai",
+      "keys_number": 89,
+      "price": 400.0,
+      "has_pads": "нет"
+    }
+  ]
+}

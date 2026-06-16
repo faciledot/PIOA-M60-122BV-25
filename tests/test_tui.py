@@ -104,14 +104,14 @@ class TestFindKeyboardsByFilter(unittest.TestCase):
 
 
 class TestRun(unittest.TestCase):
-    @patch("builtins.input", side_effect=["0"])
+    @patch("builtins.input", side_effect=["1", "0"])
     @patch("builtins.print")
     def test_exit(self, mock_print, mock_input):
         run()
         printed = [str(c[0][0]) for c in mock_print.call_args_list if c[0]]
         self.assertTrue(any("Выход из программы" in p for p in printed))
 
-    @patch("builtins.input", side_effect=["5", "0"])
+    @patch("builtins.input", side_effect=["1", "5", "0"])
     @patch("builtins.print")
     def test_unknown_command(self, mock_print, mock_input):
         run()

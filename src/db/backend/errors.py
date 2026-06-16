@@ -1,5 +1,3 @@
-# src/db/backend/errors.py
-
 class MidiKeyboardTableError(Exception):
     """Базовый класс для ошибок, связанных с таблицей MidiKeyboard."""
     pass
@@ -27,4 +25,14 @@ class EmptyCompanyNameError(MidiKeyboardTableError):
 
 class DuplicateIDError(MidiKeyboardTableError):
     """Ошибка, возникающая при попытке создать запись с уже существующим идентификатором."""
+    pass
+
+
+class FileDatabaseError(MidiKeyboardTableError):
+    """Ошибка, связанная с работой файловой базы данных."""
+    pass
+
+
+class InvalidJSONError(FileDatabaseError):
+    """Ошибка, возникающая при чтении повреждённого JSON-файла."""
     pass
